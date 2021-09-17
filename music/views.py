@@ -5,7 +5,8 @@ from django.http import JsonResponse
 from music.utils.data_access import read_data, write_data
 
 from music.serializers import MediaSerializer
-
+from cent import Client, CentException
+from django.confs import settings
 
 class SidebarView(APIView):
 
@@ -105,3 +106,33 @@ class MediaView(GenericAPIView):
 #             "name": "kingsway"
 #         }
 #         return Response(data)
+
+
+class Rtc(Client):
+    req_url = "https://realtime.zuri.caht/api"
+    req_token = settings.API_TOKEN
+    def __init__(self, url, *args, **kwargs):
+        self.headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'apikey' + str(req_token)
+            }
+        self.url = req_url
+        self.key = str(req_token)
+
+    def publish(self, room, data):
+
+        if settings.DEBUG != True:
+            client = Client(url=self.req_url, self.req_token, timeout=15)
+        else:
+            client = Client(url="http://localhost:8000/api", api_key="", verify=False)
+
+        
+        payload = {
+            "message-type": "0",
+            "data": data
+        }
+
+        try:
+            client.add("publish", payload)
+        except CentException:
+            pass
